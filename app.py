@@ -7,9 +7,12 @@ import hashlib
 app = Flask(__name__)
 
 # Database configuration
-database_url = os.environ.get('DATABASE_URL', 'sqlite:///burphub.db')
-if database_url.startswith('postgres://'):
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
+elif not database_url:
+    # Use SQLite for free tier (no PostgreSQL database)
+    database_url = 'sqlite:///burphub.db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

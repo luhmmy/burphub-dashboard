@@ -11,9 +11,3 @@ services:
       - key: SYNC_API_KEY
         generateValue: true
     autoDeploy: true
-
-databases:
-  - name: burphub-db
-    databaseName: burphub
-    user: burphub
-    plan: free
