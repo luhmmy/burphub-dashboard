@@ -1,0 +1,150 @@
+from flask import Flask, render_template, jsonify, request
+from database import db, DailyStat, StreakInfo, init_db
+import os
+from datetime import datetime, timedelta
+import hashlib
+
+app = Flask(__name__)
+
+# Database configuration
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///burphub.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SYNC_API_KEY'] = os.environ.get('SYNC_API_KEY', 'dev-key-change-in-production')
+
+# Initialize database
+db.init_app(app)
+with app.app_context():
+    init_db()
+
+@app.route('/')
+def index():
+    """Main dashboard page"""
+    return render_template('index.html')
+
+@app.route('/api/stats')
+def get_stats():
+    """Get dashboard statistics"""
+    try:
+        # Get streak info
+        streak = StreakInfo.query.first()
+        if not streak:
+            streak = StreakInfo(current_streak=0, longest_streak=0)
+        
+        # Get today's stats
+        today = datetime.now().date().isoformat()
+        today_stats = DailyStat.query.filter_by(date=today).first()
+        
+        # Get total stats
+        all_stats = DailyStat.query.all()
+        total_requests = sum(s.intercepted_requests + s.repeater_requests + 
+                           s.intruder_requests + s.scanner_requests + 
+                           s.spider_requests for s in all_stats)
+        total_minutes = sum(s.session_minutes for s in all_stats)
+        active_days = len(all_stats)
+        
+        # Get heatmap data (last 365 days)
+        heatmap = {}
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=364)
+        
+        # Initialize all dates with 0
+        current_date = start_date
+        while current_date <= end_date:
+            heatmap[current_date.isoformat()] = 0
+            current_date += timedelta(days=1)
+        
+        # Fill in actual data
+        for stat in all_stats:
+            if stat.date in heatmap:
+                total = (stat.intercepted_requests + stat.repeater_requests +
+                        stat.intruder_requests + stat.scanner_requests + stat.spider_requests)
+                heatmap[stat.date] = total
+        
+        # Tool breakdown (last 30 days)
+        thirty_days_ago = (datetime.now().date() - timedelta(days=30)).isoformat()
+        recent_stats = DailyStat.query.filter(DailyStat.date >= thirty_days_ago).all()
+        
+        tools = {
+            'proxy': sum(s.intercepted_requests for s in recent_stats),
+            'repeater': sum(s.repeater_requests for s in recent_stats),
+            'intruder': sum(s.intruder_requests for s in recent_stats),
+            'scanner': sum(s.scanner_requests for s in recent_stats),
+            'spider': sum(s.spider_requests for s in recent_stats)
+        }
+        
+        return jsonify({
+            'streak': {
+                'current': streak.current_streak,
+                'longest': streak.longest_streak,
+                'last_active': streak.last_active_date
+            },
+            'today': {
+                'requests': (today_stats.intercepted_requests + today_stats.repeater_requests +
+                           today_stats.intruder_requests + today_stats.scanner_requests +
+                           today_stats.spider_requests) if today_stats else 0
+            },
+            'totals': {
+                'requests': total_requests,
+                'time_hours': total_minutes // 60,
+                'time_minutes': total_minutes % 60,
+                'active_days': active_days
+            },
+            'heatmap': heatmap,
+            'tools': tools
+        })
+    except Exception as e:
+        print(f"Error getting stats: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/sync', methods=['POST'])
+def sync_data():
+    """Sync endpoint for BurpHub extension"""
+    # Verify API key
+    api_key = request.headers.get('X-API-Key')
+    if api_key != app.config['SYNC_API_KEY']:
+        return jsonify({'error': 'Invalid API key'}), 401
+    
+    try:
+        data = request.json
+        
+        # Update daily stats
+        for date_str, stats in data.get('daily_stats', {}).items():
+            daily_stat = DailyStat.query.filter_by(date=date_str).first()
+            if not daily_stat:
+                daily_stat = DailyStat(date=date_str)
+                db.session.add(daily_stat)
+            
+            daily_stat.intercepted_requests = stats.get('intercepted_requests', 0)
+            daily_stat.repeater_requests = stats.get('repeater_requests', 0)
+            daily_stat.intruder_requests = stats.get('intruder_requests', 0)
+            daily_stat.scanner_requests = stats.get('scanner_requests', 0)
+            daily_stat.spider_requests = stats.get('spider_requests', 0)
+            daily_stat.session_minutes = stats.get('session_minutes', 0)
+            daily_stat.sessions_count = stats.get('sessions_count', 0)
+        
+        # Update streak info
+        streak_data = data.get('streak', {})
+        if streak_data:
+            streak = StreakInfo.query.first()
+            if not streak:
+                streak = StreakInfo()
+                db.session.add(streak)
+            
+            streak.current_streak = streak_data.get('current_streak', 0)
+            streak.longest_streak = streak_data.get('longest_streak', 0)
+            streak.last_active_date = streak_data.get('last_active_date')
+        
+        db.session.commit()
+        return jsonify({'status': 'success', 'synced': len(data.get('daily_stats', {}))}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Sync error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
