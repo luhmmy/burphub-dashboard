@@ -2,6 +2,7 @@ services:
   - type: web
     name: burphub-dashboard
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
@@ -9,9 +10,10 @@ services:
         value: 3.11.0
       - key: SYNC_API_KEY
         generateValue: true
-    autoDeploy: false
+    autoDeploy: true
 
 databases:
   - name: burphub-db
     databaseName: burphub
     user: burphub
+    plan: free
