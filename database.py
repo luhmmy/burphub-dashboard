@@ -11,6 +11,12 @@ class DailyStat(db.Model):
     intruder_requests = db.Column(db.Integer, default=0)
     scanner_requests = db.Column(db.Integer, default=0)
     spider_requests = db.Column(db.Integer, default=0)
+    decoder_operations = db.Column(db.Integer, default=0)
+    comparer_operations = db.Column(db.Integer, default=0)
+    sequencer_operations = db.Column(db.Integer, default=0)
+    extender_events = db.Column(db.Integer, default=0)
+    target_additions = db.Column(db.Integer, default=0)
+    logger_requests = db.Column(db.Integer, default=0)
     session_minutes = db.Column(db.Integer, default=0)
     sessions_count = db.Column(db.Integer, default=0)
 

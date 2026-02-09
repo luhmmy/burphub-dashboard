@@ -76,7 +76,12 @@ def get_stats():
             'repeater': sum(s.repeater_requests for s in recent_stats),
             'intruder': sum(s.intruder_requests for s in recent_stats),
             'scanner': sum(s.scanner_requests for s in recent_stats),
-            'spider': sum(s.spider_requests for s in recent_stats)
+            'spider': sum(s.spider_requests for s in recent_stats),
+            'decoder': sum(s.decoder_operations for s in recent_stats),
+            'comparer': sum(s.comparer_operations for s in recent_stats),
+            'sequencer': sum(s.sequencer_operations for s in recent_stats),
+            'extender': sum(s.extender_events for s in recent_stats),
+            'target': sum(s.target_additions for s in recent_stats)
         }
         
         return jsonify({
@@ -126,6 +131,12 @@ def sync_data():
             daily_stat.intruder_requests = stats.get('intruder_requests', 0)
             daily_stat.scanner_requests = stats.get('scanner_requests', 0)
             daily_stat.spider_requests = stats.get('spider_requests', 0)
+            daily_stat.decoder_operations = stats.get('decoder_operations', 0)
+            daily_stat.comparer_operations = stats.get('comparer_operations', 0)
+            daily_stat.sequencer_operations = stats.get('sequencer_operations', 0)
+            daily_stat.extender_events = stats.get('extender_events', 0)
+            daily_stat.target_additions = stats.get('target_additions', 0)
+            daily_stat.logger_requests = stats.get('logger_requests', 0)
             daily_stat.session_minutes = stats.get('session_minutes', 0)
             daily_stat.sessions_count = stats.get('sessions_count', 0)
         
