@@ -28,6 +28,14 @@ class StreakInfo(db.Model):
     longest_streak = db.Column(db.Integer, default=0)
     last_active_date = db.Column(db.String(10))
 
+class UserProfile(db.Model):
+    __tablename__ = 'user_profile'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    handle = db.Column(db.String(100), default='')
+    bio = db.Column(db.String(500), default='')
+    github = db.Column(db.String(200), default='')
+
 def init_db():
     """Initialize database tables"""
     db.create_all()
@@ -36,4 +44,10 @@ def init_db():
     if not StreakInfo.query.first():
         streak = StreakInfo(current_streak=0, longest_streak=0)
         db.session.add(streak)
-        db.session.commit()
+    
+    # Create initial profile entry if none exists
+    if not UserProfile.query.first():
+        profile = UserProfile(handle='', bio='', github='')
+        db.session.add(profile)
+        
+    db.session.commit()

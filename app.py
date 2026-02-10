@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from database import db, DailyStat, StreakInfo, init_db
+from database import db, DailyStat, StreakInfo, UserProfile, init_db
 import os
 from datetime import datetime, timedelta
 import hashlib
@@ -84,11 +84,21 @@ def get_stats():
             'target': sum(s.target_additions for s in recent_stats)
         }
         
+        # Get profile info
+        profile = UserProfile.query.first()
+        if not profile:
+            profile = UserProfile(handle='', bio='', github='')
+        
         return jsonify({
             'streak': {
                 'current': streak.current_streak,
                 'longest': streak.longest_streak,
                 'last_active': streak.last_active_date
+            },
+            'profile': {
+                'handle': profile.handle,
+                'bio': profile.bio,
+                'github': profile.github
             },
             'today': {
                 'requests': (today_stats.intercepted_requests + today_stats.repeater_requests +
@@ -151,6 +161,18 @@ def sync_data():
             streak.current_streak = streak_data.get('current_streak', 0)
             streak.longest_streak = streak_data.get('longest_streak', 0)
             streak.last_active_date = streak_data.get('last_active_date')
+        
+        # Update profile info
+        profile_data = data.get('profile', {})
+        if profile_data:
+            profile = UserProfile.query.first()
+            if not profile:
+                profile = UserProfile()
+                db.session.add(profile)
+            
+            profile.handle = profile_data.get('handle', '')
+            profile.bio = profile_data.get('bio', '')
+            profile.github = profile_data.get('github', '')
         
         db.session.commit()
         return jsonify({'status': 'success', 'synced': len(data.get('daily_stats', {}))}), 200
