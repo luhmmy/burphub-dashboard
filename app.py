@@ -16,7 +16,7 @@ elif not database_url:
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SYNC_API_KEY'] = os.environ.get('SYNC_API_KEY', 'dev-key-change-in-production')
+app.config['SYNC_API_KEY'] = os.environ.get('SYNC_API_KEY')
 
 # Initialize database
 db.init_app(app)
