@@ -2,7 +2,6 @@ from flask import Flask, render_template, jsonify, request
 from database import db, DailyStat, StreakInfo, UserProfile, init_db
 import os
 from datetime import datetime, timedelta
-import hashlib
 
 app = Flask(__name__)
 
