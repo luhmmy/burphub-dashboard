@@ -14,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0d1117;
+            background: linear-gradient(135deg, #0d1117 0%, #1a0a0a 50%, #2a1515 100%);
             color: #e6edf3;
             padding: 20px;
             min-height: 100vh;
@@ -28,13 +28,13 @@
         /* Header */
         header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             padding: 30px 0;
         }
 
         h1 {
             font-size: 3.5rem;
-            background: linear-gradient(135deg, #dc2626 0%, #ff6633 100%);
+            background: linear-gradient(135deg, #ff3c3c 0%, #b4143c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -47,6 +47,7 @@
             font-size: 3rem;
             display: inline-block;
             margin-right: 15px;
+            -webkit-text-fill-color: initial;
         }
 
         .subtitle {
@@ -55,6 +56,60 @@
             font-weight: 500;
             letter-spacing: 3px;
             text-transform: uppercase;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 35px;
+        }
+
+        .tab-btn {
+            padding: 12px 32px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 12px;
+            background: rgba(22, 27, 34, 0.6);
+            color: #a0a0a0;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn:hover {
+            border-color: rgba(220, 38, 38, 0.6);
+            color: #e6edf3;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #dc2626, #b4143c);
+            color: #fff;
+            border-color: #dc2626;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Glass morphism cards */
@@ -104,6 +159,13 @@
             text-align: center;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(220, 38, 38, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
         }
 
         .stat-card::before {
@@ -113,13 +175,13 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #dc2626, #ff6633);
+            background: linear-gradient(90deg, #dc2626, #b4143c);
         }
 
         .stat-value {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #dc2626 0%, #ff6633 100%);
+            background: linear-gradient(135deg, #ff3c3c 0%, #b4143c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -131,6 +193,14 @@
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* Heatmap + Signal Chart Row */
+        .heatmap-signal-row {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         /* Heatmap */
@@ -150,34 +220,47 @@
         .heatmap-cell {
             width: 14px;
             height: 14px;
-            border-radius: 2px;
+            border-radius: 3px;
             transition: all 0.2s ease;
+            cursor: crosshair;
         }
 
         .heatmap-cell:hover {
-            transform: scale(1.2);
+            transform: scale(1.3);
             border: 1px solid #dc2626;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
         }
 
-        /* Red gradient for heatmap */
         .heatmap-cell[data-level="0"] {
             background: #161b22;
         }
 
         .heatmap-cell[data-level="1"] {
-            background: #4a0e0e;
+            background: #4b1414;
         }
 
         .heatmap-cell[data-level="2"] {
-            background: #7f1d1d;
+            background: #8c1e1e;
         }
 
         .heatmap-cell[data-level="3"] {
-            background: #dc2626;
+            background: #c82d2d;
         }
 
         .heatmap-cell[data-level="4"] {
-            background: #ff6633;
+            background: #ff3c3c;
+        }
+
+        /* Signal Chart */
+        .signal-chart-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signal-chart-card canvas {
+            flex: 1;
+            width: 100%;
+            border-radius: 8px;
         }
 
         /* Tool Breakdown */
@@ -211,10 +294,166 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #dc2626, #ff6633);
+            background: linear-gradient(90deg, #dc2626, #b4143c);
             border-radius: 5px;
-            transition: width 0.5s ease;
+            transition: width 0.8s ease;
             box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+        }
+
+        /* ============ WRAPPED TAB ============ */
+        .wrap-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .wrap-controls select,
+        .wrap-controls button {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            background: rgba(22, 27, 34, 0.8);
+            color: #e6edf3;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wrap-controls select:focus,
+        .wrap-controls button:hover {
+            border-color: #dc2626;
+            outline: none;
+            box-shadow: 0 0 12px rgba(220, 38, 38, 0.3);
+        }
+
+        .wrap-mode-btn.active {
+            background: linear-gradient(135deg, #dc2626, #b4143c);
+            border-color: #dc2626;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .wrap-slides {
+            position: relative;
+            min-height: 380px;
+        }
+
+        .wrap-slide {
+            display: none;
+            text-align: center;
+            padding: 50px 30px;
+            border-radius: 20px;
+            min-height: 350px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .wrap-slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrap-slide .slide-emoji {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .wrap-slide .slide-label {
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .wrap-slide .slide-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff3c3c, #b4143c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .wrap-slide .slide-subtitle {
+            font-size: 1rem;
+            color: #8b949e;
+            font-style: italic;
+        }
+
+        /* Different gradient backgrounds for each slide */
+        .wrap-slide:nth-child(1) {
+            background: linear-gradient(135deg, #280a0a, #501414);
+        }
+
+        .wrap-slide:nth-child(2) {
+            background: linear-gradient(135deg, #0a1428, #142850);
+        }
+
+        .wrap-slide:nth-child(3) {
+            background: linear-gradient(135deg, #281e0a, #503c14);
+        }
+
+        .wrap-slide:nth-child(4) {
+            background: linear-gradient(135deg, #0a1e14, #143c28);
+        }
+
+        .wrap-slide:nth-child(5) {
+            background: linear-gradient(135deg, #1e0a1e, #3c143c);
+        }
+
+        .wrap-slide:nth-child(6) {
+            background: linear-gradient(135deg, #280f0f, #641e1e);
+        }
+
+        .wrap-slide:nth-child(7) {
+            background: linear-gradient(135deg, #141423, #282846);
+        }
+
+        .wrap-slide:nth-child(8) {
+            background: linear-gradient(135deg, #0f1923, #1e3246);
+        }
+
+        .wrap-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .wrap-nav button {
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            background: rgba(22, 27, 34, 0.8);
+            color: #e6edf3;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wrap-nav button:hover:not(:disabled) {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .wrap-nav button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .wrap-nav .slide-counter {
+            color: #8b949e;
+            font-size: 0.95rem;
         }
 
         /* Loading state */
@@ -234,6 +473,10 @@
                 grid-template-columns: 1fr;
             }
 
+            .heatmap-signal-row {
+                grid-template-columns: 1fr;
+            }
+
             .heatmap {
                 grid-template-columns: repeat(53, 10px);
                 grid-template-rows: repeat(7, 10px);
@@ -243,6 +486,10 @@
             .heatmap-cell {
                 width: 10px;
                 height: 10px;
+            }
+
+            .wrap-slide .slide-value {
+                font-size: 2.5rem;
             }
         }
 
@@ -275,8 +522,24 @@
             <p class="subtitle">Red Team Activity Tracker</p>
         </header>
 
-        <div id="content" class="loading">
-            Loading your activity data...
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('wrapped')">🎵 Wrapped</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div id="content" class="loading">
+                Loading your activity data...
+            </div>
+        </div>
+
+        <!-- Wrapped Tab -->
+        <div id="tab-wrapped" class="tab-content">
+            <div id="wrapped-content" class="loading">
+                Loading your wrap...
+            </div>
         </div>
     </div>
 
@@ -285,13 +548,24 @@
     </footer>
 
     <script>
-        // Fetch and display data
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'wrapped') loadWrapped();
+        }
+
+        // ==================== DASHBOARD ====================
+        let cachedData = null;
+
         async function loadData() {
             try {
                 const response = await fetch('/api/stats');
-                const data = await response.json();
-
-                renderDashboard(data);
+                cachedData = await response.json();
+                renderDashboard(cachedData);
             } catch (error) {
                 document.getElementById('content').innerHTML = `
                     <div class="card" style="text-align: center;">
@@ -324,14 +598,20 @@
                     </div>
                 </div>
 
-                <!-- Heatmap -->
-                <div class="card">
-                    <div class="card-title">
-                        📊 Contribution Activity
-                        <span class="badge">Last 365 Days</span>
+                <!-- Heatmap + Signal Chart side by side -->
+                <div class="heatmap-signal-row">
+                    <div class="card">
+                        <div class="card-title">
+                            📊 Contribution Activity
+                            <span class="badge">Last 365 Days</span>
+                        </div>
+                        <div class="heatmap-container">
+                            ${renderHeatmap(data.heatmap)}
+                        </div>
                     </div>
-                    <div class="heatmap-container">
-                        ${renderHeatmap(data.heatmap)}
+                    <div class="card signal-chart-card">
+                        <div class="card-title">📈 Last 30 Days</div>
+                        <canvas id="signalChart"></canvas>
                     </div>
                 </div>
 
@@ -351,6 +631,9 @@
             `;
 
             document.getElementById('content').innerHTML = html;
+
+            // Draw signal chart after DOM update
+            requestAnimationFrame(() => drawSignalChart(data.heatmap));
         }
 
         function renderHeatmap(heatmapData) {
@@ -358,34 +641,129 @@
             const values = dates.map(date => heatmapData[date]);
             const maxValue = Math.max(...values, 1);
 
-            // Build grid by weeks
-            const cells = dates.map((dateStr, index) => {
+            const cells = dates.map((dateStr) => {
                 const value = heatmapData[dateStr];
                 const level = value === 0 ? 0 : Math.min(4, Math.ceil((value / maxValue) * 4));
-
-                const date = new Date(dateStr);
-                const dayOfWeek = date.getDay();
-
                 return `<div class="heatmap-cell" data-level="${level}" title="${dateStr}: ${value} requests"></div>`;
             });
 
             return `<div class="heatmap">${cells.join('')}</div>`;
         }
 
+        // ==================== SIGNAL CHART ====================
+        function drawSignalChart(heatmapData) {
+            const canvas = document.getElementById('signalChart');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+
+            // Set canvas size
+            canvas.width = canvas.offsetWidth * dpr;
+            canvas.height = canvas.offsetHeight * dpr;
+            ctx.scale(dpr, dpr);
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Extract last 30 days
+            const today = new Date();
+            const values = [];
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0];
+                values.push(heatmapData[key] || 0);
+            }
+
+            const maxVal = Math.max(...values, 1);
+            const padTop = 15, padBot = 25, padLeft = 10, padRight = 10;
+            const chartW = w - padLeft - padRight;
+            const chartH = h - padTop - padBot;
+            const stepX = chartW / 29;
+
+            // Grid lines (dashed)
+            ctx.strokeStyle = 'rgba(80, 80, 80, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            for (let i = 0; i <= 4; i++) {
+                const y = padTop + chartH * (i / 4);
+                ctx.beginPath();
+                ctx.moveTo(padLeft, y);
+                ctx.lineTo(w - padRight, y);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Build points
+            const points = values.map((v, i) => ({
+                x: padLeft + i * stepX,
+                y: padTop + chartH - (v / maxVal * chartH)
+            }));
+
+            // Filled gradient area
+            const grad = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
+            grad.addColorStop(0, 'rgba(220, 50, 50, 0.35)');
+            grad.addColorStop(1, 'rgba(220, 50, 50, 0.02)');
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+            ctx.lineTo(points[points.length - 1].x, padTop + chartH);
+            ctx.lineTo(points[0].x, padTop + chartH);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Signal line
+            const lineGrad = ctx.createLinearGradient(0, 0, w, 0);
+            lineGrad.addColorStop(0, '#ff4646');
+            lineGrad.addColorStop(1, '#c81e3c');
+            ctx.strokeStyle = lineGrad;
+            ctx.lineWidth = 2.5;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+            ctx.stroke();
+
+            // Dots
+            points.forEach((p, i) => {
+                if (values[i] > 0) {
+                    ctx.fillStyle = '#ff5050';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Glow on last point
+                    if (i === points.length - 1) {
+                        ctx.fillStyle = 'rgba(255, 60, 60, 0.25)';
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            });
+
+            // Date labels every 7 days
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '10px Segoe UI';
+            ctx.textAlign = 'center';
+            for (let i = 0; i < 30; i += 7) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - (29 - i));
+                const label = `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+                ctx.fillText(label, points[i].x, padTop + chartH + 16);
+            }
+        }
+
+        // ==================== TOOL BREAKDOWN ====================
         function renderToolBreakdown(tools) {
             const maxValue = Math.max(...Object.values(tools), 1);
-
             const toolNames = {
-                'proxy': '🔍 Proxy',
-                'repeater': '🔄 Repeater',
-                'intruder': '⚔️ Intruder',
-                'scanner': '🔬 Scanner',
-                'spider': '🕷️ Spider',
-                'decoder': '🔤 Decoder',
-                'comparer': '⚖️ Comparer',
-                'sequencer': '🎲 Sequencer',
-                'extender': '🔌 Extender',
-                'target': '🎯 Target'
+                'proxy': '🔍 Proxy', 'repeater': '🔄 Repeater', 'intruder': '⚔️ Intruder',
+                'scanner': '🔬 Scanner', 'spider': '🕷️ Spider', 'decoder': '🔤 Decoder',
+                'comparer': '⚖️ Comparer', 'sequencer': '🎲 Sequencer',
+                'extender': '🔌 Extender', 'target': '🎯 Target'
             };
 
             return Object.entries(tools).map(([tool, count]) => {
@@ -404,10 +782,89 @@
             }).join('');
         }
 
-        // Load data on page load
-        loadData();
+        // ==================== WRAPPED ====================
+        let wrapSlide = 0;
+        let wrapSlides = [];
 
-        // Refresh every 5 minutes
+        async function loadWrapped() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                renderWrapped(data);
+            } catch (error) {
+                document.getElementById('wrapped-content').innerHTML = `
+                    <div class="card" style="text-align: center;">
+                        <p style="color: #dc2626;">Error loading wrap data.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderWrapped(data) {
+            const now = new Date();
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            const monthName = monthNames[now.getMonth()];
+            const year = now.getFullYear();
+
+            // Compute monthly stats from heatmap
+            const prefix = `${year}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+            let totalReqs = 0, bestDay = '', bestDayCount = 0, activeDays = 0;
+            const toolTotals = { ...data.tools };
+            const topTool = Object.entries(toolTotals).sort((a, b) => b[1] - a[1])[0] || ['None', 0];
+
+            Object.entries(data.heatmap).forEach(([date, count]) => {
+                if (date.startsWith(prefix)) {
+                    totalReqs += count;
+                    if (count > 0) activeDays++;
+                    if (count > bestDayCount) { bestDayCount = count; bestDay = date; }
+                }
+            });
+
+            const hours = Math.floor(data.totals.time_hours || 0);
+            const mins = data.totals.time_minutes || 0;
+            const timeStr = hours >= 24 ? `${Math.floor(hours / 24)}d ${hours % 24}h` : `${hours}h ${mins}m`;
+
+            wrapSlides = [
+                { emoji: '🎯', label: 'Total Requests', value: totalReqs.toLocaleString(), sub: `${monthName} ${year}` },
+                { emoji: '🛠️', label: 'Your #1 Tool', value: topTool[0].charAt(0).toUpperCase() + topTool[0].slice(1), sub: `${topTool[1].toLocaleString()} uses` },
+                { emoji: '🔥', label: 'Most Active Day', value: bestDay || 'None', sub: `${bestDayCount.toLocaleString()} requests` },
+                { emoji: '⏱️', label: 'Time Invested', value: timeStr, sub: 'of security testing' },
+                { emoji: '📅', label: 'Active Days', value: `${activeDays}`, sub: 'days you showed up' },
+                { emoji: '🏆', label: 'Longest Streak', value: `${data.streak.longest} days`, sub: 'consecutive testing days' },
+            ];
+
+            wrapSlide = 0;
+            renderWrapSlide();
+        }
+
+        function renderWrapSlide() {
+            const slides = wrapSlides.map((s, i) => `
+                <div class="wrap-slide ${i === wrapSlide ? 'active' : ''}">
+                    <div class="slide-emoji">${s.emoji}</div>
+                    <div class="slide-label">${s.label}</div>
+                    <div class="slide-value">${s.value}</div>
+                    <div class="slide-subtitle">${s.sub}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('wrapped-content').innerHTML = `
+                <div class="wrap-slides">${slides}</div>
+                <div class="wrap-nav">
+                    <button onclick="navWrap(-1)" ${wrapSlide === 0 ? 'disabled' : ''}>◀ Prev</button>
+                    <span class="slide-counter">${wrapSlide + 1} / ${wrapSlides.length}</span>
+                    <button onclick="navWrap(1)" ${wrapSlide === wrapSlides.length - 1 ? 'disabled' : ''}>Next ▶</button>
+                </div>
+            `;
+        }
+
+        function navWrap(dir) {
+            wrapSlide = Math.max(0, Math.min(wrapSlides.length - 1, wrapSlide + dir));
+            renderWrapSlide();
+        }
+
+        // ==================== INIT ====================
+        loadData();
         setInterval(loadData, 5 * 60 * 1000);
     </script>
 </body>
