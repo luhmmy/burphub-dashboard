@@ -918,7 +918,9 @@
             const cells = dates.map((dateStr) => {
                 const value = heatmapData[dateStr];
                 const level = value === 0 ? 0 : Math.min(4, Math.ceil((value / maxValue) * 4));
-                return `<div class="heatmap-cell" data-level="${level}" title="${dateStr}: ${value} requests"></div>`;
+                // Use escapeHtml on dateStr to prevent attribute injection
+                const safeDate = escapeHtml(dateStr);
+                return `<div class="heatmap-cell" data-level="${level}" title="${safeDate}: ${value} requests"></div>`;
             });
 
             return `<div class="heatmap">${cells.join('')}</div>`;
@@ -1042,10 +1044,12 @@
 
             return Object.entries(tools).map(([tool, count]) => {
                 const percentage = (count / maxValue) * 100;
+                // Use escapeHtml on tool name
+                const safeToolName = toolNames[tool] || escapeHtml(tool);
                 return `
                     <div class="tool-item">
                         <div class="tool-header">
-                            <span class="tool-name">${toolNames[tool] || tool}</span>
+                            <span class="tool-name">${safeToolName}</span>
                             <span class="tool-count">${count.toLocaleString()}</span>
                         </div>
                         <div class="progress-bar">
@@ -1101,8 +1105,8 @@
 
             wrapSlides = [
                 { emoji: '🎯', label: 'Total Requests', value: totalReqs.toLocaleString(), sub: `${monthName} ${year}` },
-                { emoji: '🛠️', label: 'Your #1 Tool', value: topTool[0].charAt(0).toUpperCase() + topTool[0].slice(1), sub: `${topTool[1].toLocaleString()} uses` },
-                { emoji: '🔥', label: 'Most Active Day', value: bestDay || 'None', sub: `${bestDayCount.toLocaleString()} requests` },
+                { emoji: '🛠️', label: 'Your #1 Tool', value: escapeHtml(topTool[0].charAt(0).toUpperCase() + topTool[0].slice(1)), sub: `${topTool[1].toLocaleString()} uses` },
+                { emoji: '🔥', label: 'Most Active Day', value: escapeHtml(bestDay || 'None'), sub: `${bestDayCount.toLocaleString()} requests` },
                 { emoji: '⏱️', label: 'Time Invested', value: timeStr, sub: 'of security testing' },
                 { emoji: '📅', label: 'Active Days', value: `${activeDays}`, sub: 'days you showed up' },
                 { emoji: '🏆', label: 'Longest Streak', value: `${data.streak.longest} days`, sub: 'consecutive testing days' },

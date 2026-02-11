@@ -22,6 +22,17 @@ db.init_app(app)
 with app.app_context():
     init_db()
 
+@app.after_request
+def add_security_headers(response):
+    """Add OWASP-recommended security headers"""
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;"
+    return response
+
+# Simple in-memory rate limiter for sync attempts
+sync_attempts = {}
+
 @app.route('/')
 def index():
     """Main dashboard page"""
@@ -120,9 +131,26 @@ def get_stats():
 @app.route('/api/sync', methods=['POST'])
 def sync_data():
     """Sync endpoint for BurpHub extension"""
+    client_ip = request.remote_addr
+    now = datetime.now()
+    
+    # Simple rate limiting: 10 syncs per minute per IP
+    if client_ip in sync_attempts:
+        last_time, count = sync_attempts[client_ip]
+        if now - last_time < timedelta(minutes=1):
+            if count >= 10:
+                print(f"[SECURITY] Rate limit exceeded for IP: {client_ip} at {now}")
+                return jsonify({'error': 'Rate limit exceeded'}), 429
+            sync_attempts[client_ip] = (last_time, count + 1)
+        else:
+            sync_attempts[client_ip] = (now, 1)
+    else:
+        sync_attempts[client_ip] = (now, 1)
+
     # Verify API key
     api_key = request.headers.get('X-API-Key')
     if api_key != app.config['SYNC_API_KEY']:
+        print(f"[SECURITY] Failed sync attempt - Invalid API Key from IP: {client_ip} at {now}")
         return jsonify({'error': 'Invalid API key'}), 401
     
     try:
