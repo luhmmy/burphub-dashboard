@@ -1098,9 +1098,12 @@
         // ==================== WRAPPED ====================
         let wrapSlide = 0;
         let wrapSlides = [];
+        let currentWrapMode = 'monthly'; // 'daily', 'monthly', 'yearly'
 
         async function loadWrapped() {
             try {
+                // Return to first slide when reloading or initializing
+                wrapSlide = 0;
                 const response = await fetch('/api/stats');
                 const data = await response.json();
                 renderWrapped(data);
@@ -1113,15 +1116,35 @@
             }
         }
 
+        function setWrapMode(mode) {
+            currentWrapMode = mode;
+            wrapSlide = 0;
+            loadWrapped();
+        }
+
         function renderWrapped(data) {
             const now = new Date();
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                 'July', 'August', 'September', 'October', 'November', 'December'];
             const monthName = monthNames[now.getMonth()];
             const year = now.getFullYear();
+            const todayStr = now.toISOString().split('T')[0];
 
-            // Compute monthly stats from heatmap
-            const prefix = `${year}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+            let prefix = "";
+            let periodLabel = "";
+
+            if (currentWrapMode === 'daily') {
+                prefix = todayStr;
+                periodLabel = "Today";
+            } else if (currentWrapMode === 'monthly') {
+                prefix = `${year}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+                periodLabel = `${monthName} ${year}`;
+            } else {
+                prefix = `${year}`;
+                periodLabel = `Year ${year}`;
+            }
+
+            // Compute stats for selected mode from heatmap
             let totalReqs = 0, bestDay = '', bestDayCount = 0, activeDays = 0;
             const toolTotals = { ...data.tools };
             const topTool = Object.entries(toolTotals).sort((a, b) => b[1] - a[1])[0] || ['None', 0];
@@ -1142,7 +1165,7 @@
             const topExtension30Days = Object.entries(data.extension_summary || {}).sort((a, b) => b[1] - a[1])[0] || ['None', 0];
 
             wrapSlides = [
-                { emoji: '🎯', label: 'Total Requests', value: totalReqs.toLocaleString(), sub: `${monthName} ${year}` },
+                { emoji: '🎯', label: 'Total Requests', value: totalReqs.toLocaleString(), sub: periodLabel },
                 { emoji: '🛠️', label: 'Your #1 Tool', value: escapeHtml(topTool[0].charAt(0).toUpperCase() + topTool[0].slice(1)), sub: `${topTool[1].toLocaleString()} uses` },
                 { emoji: '🔌', label: 'Top Extension (30 Days)', value: escapeHtml(topExtension30Days[0]), sub: `${topExtension30Days[1].toLocaleString()} uses` },
                 { emoji: '🔥', label: 'Most Active Day', value: escapeHtml(bestDay || 'None'), sub: `${bestDayCount.toLocaleString()} requests` },
@@ -1161,7 +1184,7 @@
                         `${activeDays} Active Days`,
                         `${data.streak.longest} Day Streak`
                     ],
-                    sub: `${monthName} Summary`
+                    sub: `${periodLabel} Summary`
                 }
             ];
 
@@ -1184,6 +1207,11 @@
             `).join('');
 
             document.getElementById('wrapped-content').innerHTML = `
+                <div class="wrap-controls">
+                    <button class="wrap-mode-btn ${currentWrapMode === 'daily' ? 'active' : ''}" onclick="setWrapMode('daily')">Daily</button>
+                    <button class="wrap-mode-btn ${currentWrapMode === 'monthly' ? 'active' : ''}" onclick="setWrapMode('monthly')">Monthly</button>
+                    <button class="wrap-mode-btn ${currentWrapMode === 'yearly' ? 'active' : ''}" onclick="setWrapMode('yearly')">Yearly</button>
+                </div>
                 <div class="wrap-slides">${slides}</div>
                 <div class="wrap-nav">
                     <button onclick="navWrap(-1)" ${wrapSlide === 0 ? 'disabled' : ''}>◀ Prev</button>
