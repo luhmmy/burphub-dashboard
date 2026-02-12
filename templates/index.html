@@ -895,6 +895,22 @@
                     ${renderToolBreakdown(data.tools)}
                 </div>
 
+                <!-- Extension Breakdown (Dynamic) -->
+                ${Object.keys(data.extension_summary || {}).length > 0 ? `
+                <div class="card">
+                    <div class="card-title">🔌 Top Extensions<span class="badge">Last 30 Days</span></div>
+                    ${renderExtensionBreakdown(data.extension_summary)}
+                </div>
+                ` : ''}
+
+                <!-- Today's Extensions (if different from summary or active) -->
+                ${Object.keys(data.extensions || {}).length > 0 ? `
+                <div class="card" style="border-style: dashed;">
+                    <div class="card-title">🔌 Active Now<span class="badge">Today</span></div>
+                    ${renderExtensionBreakdown(data.extensions)}
+                </div>
+                ` : ''}
+
                 <!-- Streak Info -->
                 <div class="card" style="text-align: center;">
                     <p style="font-size: 1.5rem; margin-bottom: 10px;">
@@ -1060,6 +1076,24 @@
             }).join('');
         }
 
+        function renderExtensionBreakdown(extensions) {
+            const maxValue = Math.max(...Object.values(extensions), 1);
+            return Object.entries(extensions).map(([name, count]) => {
+                const percentage = (count / maxValue) * 100;
+                return `
+                    <div class="tool-item">
+                        <div class="tool-header">
+                            <span class="tool-name">🔌 ${escapeHtml(name)}</span>
+                            <span class="tool-count">${count.toLocaleString()}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // ==================== WRAPPED ====================
         let wrapSlide = 0;
         let wrapSlides = [];
@@ -1103,13 +1137,31 @@
             const mins = data.totals.time_minutes || 0;
             const timeStr = hours >= 24 ? `${Math.floor(hours / 24)}d ${hours % 24}h` : `${hours}h ${mins}m`;
 
+            // Calculate top extension from summary
+            const topExtension30Days = Object.entries(data.extension_summary || {}).sort((a, b) => b[1] - a[1])[0] || ['None', 0];
+
             wrapSlides = [
                 { emoji: '🎯', label: 'Total Requests', value: totalReqs.toLocaleString(), sub: `${monthName} ${year}` },
                 { emoji: '🛠️', label: 'Your #1 Tool', value: escapeHtml(topTool[0].charAt(0).toUpperCase() + topTool[0].slice(1)), sub: `${topTool[1].toLocaleString()} uses` },
+                { emoji: '🔌', label: 'Top Extension (30 Days)', value: escapeHtml(topExtension30Days[0]), sub: `${topExtension30Days[1].toLocaleString()} uses` },
                 { emoji: '🔥', label: 'Most Active Day', value: escapeHtml(bestDay || 'None'), sub: `${bestDayCount.toLocaleString()} requests` },
                 { emoji: '⏱️', label: 'Time Invested', value: timeStr, sub: 'of security testing' },
                 { emoji: '📅', label: 'Active Days', value: `${activeDays}`, sub: 'days you showed up' },
                 { emoji: '🏆', label: 'Longest Streak', value: `${data.streak.longest} days`, sub: 'consecutive testing days' },
+                {
+                    emoji: '✨',
+                    label: 'Overall Recap',
+                    value: 'RECAP',
+                    isSummary: true,
+                    metrics: [
+                        `${totalReqs.toLocaleString()} Total Requests`,
+                        `${toolNames[topTool[0]] || topTool[0]} (#1 Tool)`,
+                        `${timeStr} Total Time`,
+                        `${activeDays} Active Days`,
+                        `${data.streak.longest} Day Streak`
+                    ],
+                    sub: `${monthName} Summary`
+                }
             ];
 
             wrapSlide = 0;
@@ -1121,7 +1173,11 @@
                 <div class="wrap-slide ${i === wrapSlide ? 'active' : ''}">
                     <div class="slide-emoji">${s.emoji}</div>
                     <div class="slide-label">${s.label}</div>
-                    <div class="slide-value">${s.value}</div>
+                    ${s.isSummary ? `
+                        <div style="margin-top: 20px; text-align: left; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto;">
+                            ${s.metrics.map(m => `<div style="color: #e6edf3; font-size: 1.1rem; margin-bottom: 10px;">• ${m}</div>`).join('')}
+                        </div>
+                    ` : `<div class="slide-value">${s.value}</div>`}
                     <div class="slide-subtitle">${s.sub}</div>
                 </div>
             `).join('');

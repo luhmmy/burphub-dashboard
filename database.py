@@ -20,6 +20,16 @@ class DailyStat(db.Model):
     session_minutes = db.Column(db.Integer, default=0)
     sessions_count = db.Column(db.Integer, default=0)
 
+class ExtensionStat(db.Model):
+    __tablename__ = 'extension_stats'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String(10), db.ForeignKey('daily_stats.date'))
+    name = db.Column(db.String(100))
+    count = db.Column(db.Integer, default=0)
+    
+    db.UniqueConstraint('date', 'name', name='uix_date_name')
+
 class StreakInfo(db.Model):
     __tablename__ = 'streak_info'
     

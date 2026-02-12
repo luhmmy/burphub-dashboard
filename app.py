@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from database import db, DailyStat, StreakInfo, UserProfile, init_db
+from database import db, DailyStat, StreakInfo, UserProfile, ExtensionStat, init_db
 import os
 from datetime import datetime, timedelta
 
@@ -99,6 +99,15 @@ def get_stats():
         if not profile:
             profile = UserProfile(handle='', bio='', github='')
         
+        # Extensions for today
+        today_extensions = {e.name: e.count for e in ExtensionStat.query.filter_by(date=today).all()}
+        
+        # Extensions for the last 30 days
+        recent_ext_stats = ExtensionStat.query.filter(ExtensionStat.date >= thirty_days_ago).all()
+        aggregated_extensions = {}
+        for estat in recent_ext_stats:
+            aggregated_extensions[estat.name] = aggregated_extensions.get(estat.name, 0) + estat.count
+        
         return jsonify({
             'streak': {
                 'current': streak.current_streak,
@@ -122,7 +131,9 @@ def get_stats():
                 'active_days': active_days
             },
             'heatmap': heatmap,
-            'tools': tools
+            'tools': tools,
+            'extensions': today_extensions,
+            'extension_summary': aggregated_extensions
         })
     except Exception as e:
         print(f"Error getting stats: {e}")
@@ -176,6 +187,16 @@ def sync_data():
             daily_stat.logger_requests = stats.get('logger_requests', 0)
             daily_stat.session_minutes = stats.get('session_minutes', 0)
             daily_stat.sessions_count = stats.get('sessions_count', 0)
+            
+            # Update extension stats for this day
+            ext_data = stats.get('extensions', {})
+            if ext_data:
+                for ext_name, ext_count in ext_data.items():
+                    ext_stat = ExtensionStat.query.filter_by(date=date_str, name=ext_name).first()
+                    if not ext_stat:
+                        ext_stat = ExtensionStat(date=date_str, name=ext_name)
+                        db.session.add(ext_stat)
+                    ext_stat.count = ext_count
         
         # Update streak info
         streak_data = data.get('streak', {})
