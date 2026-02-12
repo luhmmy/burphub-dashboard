@@ -800,6 +800,13 @@
         // ==================== DASHBOARD ====================
         let cachedData = null;
 
+        const toolNames = {
+            'proxy': '🔍 Proxy', 'repeater': '🔄 Repeater', 'intruder': '⚔️ Intruder',
+            'scanner': '🔬 Scanner', 'spider': '🕷️ Spider', 'decoder': '🔤 Decoder',
+            'comparer': '⚖️ Comparer', 'sequencer': '🎲 Sequencer',
+            'extender': '🔌 Extender', 'target': '🎯 Target'
+        };
+
         async function loadData() {
             try {
                 const response = await fetch('/api/stats');
@@ -1051,12 +1058,6 @@
         // ==================== TOOL BREAKDOWN ====================
         function renderToolBreakdown(tools) {
             const maxValue = Math.max(...Object.values(tools), 1);
-            const toolNames = {
-                'proxy': '🔍 Proxy', 'repeater': '🔄 Repeater', 'intruder': '⚔️ Intruder',
-                'scanner': '🔬 Scanner', 'spider': '🕷️ Spider', 'decoder': '🔤 Decoder',
-                'comparer': '⚖️ Comparer', 'sequencer': '🎲 Sequencer',
-                'extender': '🔌 Extender', 'target': '🎯 Target'
-            };
 
             return Object.entries(tools).map(([tool, count]) => {
                 const percentage = (count / maxValue) * 100;
